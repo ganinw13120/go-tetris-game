@@ -1,7 +1,9 @@
 // Package core provides ...
 package core
 
-import "image/color"
+import (
+	"image/color"
+)
 
 type Space struct {
 	Avaiable [][]bool

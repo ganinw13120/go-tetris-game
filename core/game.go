@@ -54,6 +54,37 @@ func (g *Game) createNewPiece() {
 	g.fallenPiece = &fallenPiece
 }
 
+func (g *Game) onBlockCollide() {
+	blocks := make([][]*bool, g.blockRow)
+	for k := range blocks {
+		blocks[k] = make([]*bool, g.blockCol)
+	}
+	for p, piece := range g.pieces {
+		for i, row := range piece.Block {
+			for j, col := range row {
+				if col {
+					blocks[piece.PosY+i][piece.PosX+j] = &(g.pieces[p].Block[i][j])
+				}
+			}
+		}
+	}
+	for _, row := range blocks {
+		isValidRow := true
+		for _, col := range row {
+			if col == nil {
+				isValidRow = false
+				break
+			}
+		}
+		if isValidRow {
+			for _, col := range row {
+				*col = false
+			}
+			//Move down
+		}
+	}
+}
+
 func (g *Game) Update() error {
 	for _, k := range inpututil.PressedKeys() {
 		if k == ebiten.KeyRight && inpututil.IsKeyJustPressed(ebiten.KeyRight) {
@@ -76,6 +107,8 @@ func (g *Game) Update() error {
 	g.fallenPiece.MoveVertical(1, g.space)
 
 	if !g.fallenPiece.IsMoving {
+		g.space.updateSpace(g.pieces)
+		g.onBlockCollide()
 		g.createNewPiece()
 	}
 

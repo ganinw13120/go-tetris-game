@@ -137,3 +137,7 @@ func (piece *Piece) duplicateBlock() [][]bool {
 	}
 	return val
 }
+
+func (piece *Piece) ForceMoveVertical(distance int) {
+	piece.PosY = util.Lerp(piece.PosY+distance, piece.boundMinY, piece.boundMaxY)
+}
