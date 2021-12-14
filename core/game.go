@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -22,6 +23,7 @@ type Game struct {
 	pieces      []*Piece
 	fallenPiece *Piece
 	clock       int
+	isEnd       bool
 }
 
 // https://enchantia.com/software/graphapp/doc/tutorial/colours.htm
@@ -68,7 +70,7 @@ func (g *Game) onBlockCollide() {
 			}
 		}
 	}
-	for _, row := range blocks {
+	for i, row := range blocks {
 		isValidRow := true
 		for _, col := range row {
 			if col == nil {
@@ -77,15 +79,36 @@ func (g *Game) onBlockCollide() {
 			}
 		}
 		if isValidRow {
-			for _, col := range row {
-				*col = false
+			for k := i; k >= 0; k-- {
+				for l, block := range blocks[k] {
+					if block == nil {
+						continue
+					}
+					if k == 0 {
+						*block = false
+					} else {
+						if blocks[k-1][l] != nil {
+							*block = *blocks[k-1][l]
+						} else {
+							*block = false
+						}
+					}
+				}
 			}
-			//Move down
+		}
+	}
+	for _, piece := range g.pieces {
+		if piece.PosY <= 0 {
+			fmt.Println("Game over!")
+			g.isEnd = true
 		}
 	}
 }
 
 func (g *Game) Update() error {
+	if g.isEnd {
+		return nil
+	}
 	for _, k := range inpututil.PressedKeys() {
 		if k == ebiten.KeyRight && inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 			g.fallenPiece.MoveHorizontal(1, g.space)
@@ -120,7 +143,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for row, v := range g.space.Block {
 		for col, block := range v {
 			imgBlock := ebiten.NewImage(g.blockWidth, g.blockHeight)
-			imgBlock.Fill(block)
+			if g.isEnd {
+				imgBlock.Fill(color.Opaque)
+			} else {
+				imgBlock.Fill(block)
+			}
 			opImg := ebiten.DrawImageOptions{}
 			opImg.GeoM.Translate(float64((g.gap*col)+(col*g.blockWidth)), float64((g.gap*row)+(row*g.blockWidth)))
 			screen.DrawImage(imgBlock, &opImg)

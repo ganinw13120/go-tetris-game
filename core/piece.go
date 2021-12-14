@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"math/rand"
 	"tetris/util"
+	"time"
 )
 
 type Piece struct {
@@ -52,6 +53,7 @@ func NewPiece(startX int, startY int, boundMinX int, boundMaxX int, boundMinY in
 	blockColor = append(blockColor, color.RGBA{0xFF, 0x80, 0x00, 0xFF})
 	blockColor = append(blockColor, color.RGBA{0x00, 0x00, 0xFF, 0xFF})
 	blockColor = append(blockColor, color.RGBA{0xFF, 0x00, 0xFF, 0xFF})
+	rand.Seed(time.Now().UnixNano())
 	ran := rand.Intn(len(Types))
 	return Piece{
 		Type:      1,
@@ -114,8 +116,8 @@ func (piece *Piece) Rotate(space Space) {
 		}
 	}
 	isValid := true
-	for x, v := range tempBlock {
-		for y, block := range v {
+	for y, v := range tempBlock {
+		for x, block := range v {
 			if block && space.checkAvaiable(y+piece.PosY, x+piece.PosX) {
 				isValid = false
 			}
